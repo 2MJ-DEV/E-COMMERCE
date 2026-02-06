@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "marchelocal",
   "private": true,
   "packageManager": "pnpm@9",
@@ -6,5 +6,11 @@
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "prisma": "6.19.2"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.2"
   }
 }
