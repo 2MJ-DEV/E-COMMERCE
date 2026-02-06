@@ -99,3 +99,52 @@ cd apps/api
 pnpm prisma migrate dev --name marketplace_full
 pnpm prisma generate
 ```
+
+---
+
+## Issue 3 — Endpoint login JWT
+**Statut :** Terminé
+
+**Ce qui a été fait :**
+- Ajout de la route `POST /auth/login`.
+- Validation de `email` et `role` dans le body.
+- Génération d'un JWT avec expiration 1h.
+
+**Fichiers modifiés/créés :**
+- `apps/api/src/index.ts`
+- `apps/api/src/utils/roles.ts`
+
+**Exemple rapide :**
+```bash
+curl -X POST http://localhost:4000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","role":"client"}'
+```
+
+---
+
+## Issue 4 — Middleware JWT + Guard de roles
+**Statut :** Terminé
+
+**Ce qui a été fait :**
+- Creation du middleware `auth` qui verifie le token JWT.
+- Ajout du guard `requireRole(...roles)` pour limiter l'acces.
+- Typage `req.user` via une declaration de module Express.
+
+**Fichiers modifiés/créés :**
+- `apps/api/src/middleware/auth.ts`
+- `apps/api/src/middleware/requireRole.ts`
+- `apps/api/src/types/express.d.ts`
+
+---
+
+## Issue 5 — Routes protegees de test
+**Statut :** Terminé
+
+**Ce qui a été fait :**
+- Ajout des routes `/me`, `/admin`, `/seller`, `/client`.
+- Protection via `auth` et `requireRole`.
+
+**Fichiers modifiés/créés :**
+- `apps/api/src/routes/test-protected.ts`
+- `apps/api/src/controllers/test-protected.controller.ts`
