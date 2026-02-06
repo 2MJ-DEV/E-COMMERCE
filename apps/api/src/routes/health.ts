@@ -1,14 +1,8 @@
-// Fabrique de routeur Express
-import { Router, type Request, type Response } from "express";
+import { Router } from "express";
+import { getHealth } from "../controllers/health.controller.js";
 
-// Crée une instance de routeur pour le health check
 const router = Router();
 
-// Endpoint de vie basique
-router.get("/", (_req: Request, res: Response) => {
-  // Répond avec un payload OK simple
-  res.json({ ok: true });
-});
+router.get("/", getHealth);
 
-// Exporte le routeur pour montage dans l’app principale
 export default router;
