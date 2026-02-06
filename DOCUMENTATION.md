@@ -147,4 +147,8 @@ curl -X POST http://localhost:4000/auth/login \
 
 **Fichiers modifiés/créés :**
 - `apps/api/src/routes/test-protected.ts`
+- `apps/api/src/routes/users.ts`
+- `apps/api/src/routes/admin.ts`
+- `apps/api/src/routes/seller.ts`
+- `apps/api/src/routes/client.ts`
 - `apps/api/src/controllers/test-protected.controller.ts`
