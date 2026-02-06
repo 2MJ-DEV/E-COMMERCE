@@ -99,7 +99,6 @@ cd apps/api
 pnpm prisma migrate dev --name marketplace_full
 pnpm prisma generate
 ```
-
 ---
 
 ## Issue 3 — Endpoint login JWT
@@ -146,5 +145,8 @@ curl -X POST http://localhost:4000/auth/login \
 - Protection via `auth` et `requireRole`.
 
 **Fichiers modifiés/créés :**
-- `apps/api/src/routes/test-protected.ts`
+- `apps/api/src/routes/users.ts`
+- `apps/api/src/routes/admin.ts`
+- `apps/api/src/routes/seller.ts`
+- `apps/api/src/routes/client.ts`
 - `apps/api/src/controllers/test-protected.controller.ts`
