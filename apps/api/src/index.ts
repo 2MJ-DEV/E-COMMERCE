@@ -1,5 +1,5 @@
 // Framework web principal
-import express from "express";
+import express, { type Request, type Response } from "express";
 // Middleware CORS pour les requêtes cross-origin
 import cors from "cors";
 // Librairie de signature JWT
@@ -8,6 +8,8 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 // Routeur de health check
 import healthRouter from "./routes/health.js";
+// Validation des rôles
+import { isValidRole } from "./utils/roles.js";
 
 // Crée l’instance Express
 const app = express();
@@ -17,7 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 // Configuration du port avec fallback
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 // Secret JWT pour signer les tokens (utiliser une valeur forte en prod)
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
@@ -25,12 +27,16 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 app.use("/health", healthRouter);
 
 // Endpoint login simple qui émet un JWT
-app.post("/auth/login", (req, res) => {
+app.post("/auth/login", (req: Request, res: Response) => {
   // Extrait les champs attendus du body
   const { email, role } = req.body || {};
   // Validation basique des entrées
   if (!email || !role) {
     return res.status(400).json({ error: "email and role required" });
+  }
+  // Validation du rôle fourni
+  if (!isValidRole(role)) {
+    return res.status(401).json({ error: "invalid role" });
   }
   // Crée un JWT signé avec expiration 1h
   const token = jwt.sign({ email, role }, JWT_SECRET, { expiresIn: "1h" });
