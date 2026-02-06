@@ -79,3 +79,23 @@ cd apps/api
 pnpm install
 pnpm dev
 ```
+
+---
+
+## Modèle Marketplace (v2 minimal + extensions)
+**Statut :** Terminé (schéma Prisma, migration à appliquer)
+
+**Ce qui a été fait :**
+- Extension du schéma Prisma pour la marketplace (produits, panier, commandes).
+- Ajout des entités avancées : adresses, paiements, livraison, images produit, avis.
+- Ajout des enums : `ProductCategory`, `ProductUnit`, `OrderStatus`, `PaymentStatus`, `PaymentProvider`, `ShipmentStatus`, `AddressType`, `Currency`.
+
+**Fichiers modifiés/créés :**
+- `apps/api/prisma/schema.prisma`
+
+**Comment appliquer la migration :**
+```bash
+cd apps/api
+pnpm prisma migrate dev --name marketplace_full
+pnpm prisma generate
+```

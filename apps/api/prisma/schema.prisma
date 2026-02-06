@@ -1,0 +1,265 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  superadmin
+  vendeur
+  client
+}
+
+enum ProductCategory {
+  LEGUME
+  VIANDE
+}
+
+enum ProductUnit {
+  KG
+  PIECE
+  BOTTE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  CASH
+  CARD
+  MOBILE_MONEY
+}
+
+enum Currency {
+  USD
+  CDF
+}
+
+enum ShipmentStatus {
+  PENDING
+  READY
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  phone     String?
+  passwordHash String?
+  avatarUrl String?
+  role      Role     @default(client)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart      Cart?
+  orders    Order[]
+  addresses Address[]
+  payments  Payment[]
+  reviews   Review[]
+  products  Product[] @relation("SellerProducts")
+}
+
+model Product {
+  id                String           @id @default(cuid())
+  name              String
+  description       String?
+  priceCents        Int
+  sku               String?          @unique
+  category          ProductCategory
+  unit              ProductUnit
+  stock             Int              @default(0)
+  isActive          Boolean          @default(true)
+  minWeightGrams    Int?
+  maxWeightGrams    Int?
+  coldChainRequired Boolean          @default(false)
+  maxTempC          Int?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  sellerId String?
+  seller   User?    @relation("SellerProducts", fields: [sellerId], references: [id])
+
+  images     ProductImage[]
+  reviews    Review[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user  User      @relation(fields: [userId], references: [id])
+  items CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cartId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  totalCents Int
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user      User          @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+  payment   Payment?
+  shipment  Shipment?
+  address   OrderAddress?
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  productId  String
+  quantity   Int
+  priceCents Int
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
+
+model Address {
+  id        String      @id @default(cuid())
+  userId    String
+  type      AddressType @default(SHIPPING)
+  fullName  String
+  phone     String?
+  line1     String
+  line2     String?
+  city      String
+  postalCode String?
+  country   String
+  isDefault Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model OrderAddress {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  fullName  String
+  phone     String?
+  line1     String
+  line2     String?
+  city      String
+  postalCode String?
+  country   String
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model Payment {
+  id         String         @id @default(cuid())
+  orderId    String         @unique
+  userId     String
+  provider   PaymentProvider
+  status     PaymentStatus  @default(PENDING)
+  amountCents Int
+  currency   Currency       @default(USD)
+  transactionRef String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Shipment {
+  id        String         @id @default(cuid())
+  orderId   String         @unique
+  status    ShipmentStatus @default(PENDING)
+  carrier   String?
+  trackingNumber String?
+  shippedAt DateTime?
+  deliveredAt DateTime?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([productId])
+}
