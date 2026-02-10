@@ -6,5 +6,6 @@ import { getSeller } from "../controllers/test-protected.controller.js";
 const router = Router();
 
 router.get("/seller", auth, requireRole("vendeur"), getSeller);
+router.get("/fournisseur", auth, requireRole("vendeur"), getSeller);
 
 export default router;

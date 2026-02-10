@@ -1,6 +1,6 @@
 import { type Request, type Response, type NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { type Role, isValidRole } from "../utils/roles.js";
+import { type Role, normalizeRole } from "../utils/roles.js";
 
 export type AuthUser = {
   email: string;
@@ -19,11 +19,12 @@ export function auth(req: Request, res: Response, next: NextFunction) {
 
   try {
     const payload = jwt.verify(token, JWT_SECRET) as { email?: string; role?: string };
-    if (!payload.email || !payload.role || !isValidRole(payload.role)) {
+    const normalizedRole = payload.role ? normalizeRole(payload.role) : null;
+    if (!payload.email || !normalizedRole) {
       return res.status(401).json({ error: "invalid token" });
     }
 
-    req.user = { email: payload.email, role: payload.role };
+    req.user = { email: payload.email, role: normalizedRole };
     return next();
   } catch {
     return res.status(401).json({ error: "invalid token" });

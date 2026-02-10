@@ -6,5 +6,6 @@ import { getAdmin } from "../controllers/test-protected.controller.js";
 const router = Router();
 
 router.get("/admin", auth, requireRole("superadmin"), getAdmin);
+router.get("/superadmin", auth, requireRole("superadmin"), getAdmin);
 
 export default router;
