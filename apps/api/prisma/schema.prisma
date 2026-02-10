@@ -96,7 +96,7 @@ model Product {
   description       String?
   priceCents        Int
   sku               String?          @unique
-  category          ProductCategory
+  category          ProductCategory  @default(LEGUME)
   unit              ProductUnit
   stock             Int              @default(0)
   isActive          Boolean          @default(true)
