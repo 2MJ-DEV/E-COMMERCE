@@ -7,6 +7,7 @@ import usersRouter from "./routes/users.js";
 import adminRouter from "./routes/admin.js";
 import sellerRouter from "./routes/seller.js";
 import clientRouter from "./routes/client.js";
+import productsRouter from "./routes/products.js";
 
 const app = express();
 app.use(cors());
@@ -16,6 +17,7 @@ const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 
 app.use("/health", healthRouter);
 app.use("/auth", authRouter);
+app.use("/products", productsRouter);
 app.use("/", usersRouter);
 app.use("/", adminRouter);
 app.use("/", sellerRouter);
