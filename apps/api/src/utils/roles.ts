@@ -1,13 +1,13 @@
 // Liste des roles autorises dans l'application (cotes backend)
-export const ROLES = ["superadmin", "vendeur", "client"] as const;
+export const ROLES = ["superadmin", "fournisseur", "client"] as const;
 
 // Type de role derive de la liste
 export type Role = (typeof ROLES)[number];
 
-// Alias pour compatibilite frontend (admin/fournisseur)
+// Alias pour compatibilite frontend (admin + legacy vendeur)
 const ROLE_ALIASES: Record<string, Role> = {
   admin: "superadmin",
-  fournisseur: "vendeur",
+  vendeur: "fournisseur",
 };
 
 // Verifie si un role est valide

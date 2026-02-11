@@ -1,5 +1,5 @@
 // Allowed roles for the application.
-const ROLES = ["superadmin", "vendeur", "client"];
+const ROLES = ["superadmin", "fournisseur", "client"];
 
 // Validate role value.
 function isValidRole(role) {

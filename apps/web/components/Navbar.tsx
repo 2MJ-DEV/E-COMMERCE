@@ -2,20 +2,55 @@
 
 import React from 'react'
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "./ui/button";
 import { Logo } from "@/components/logo";
 import { Heart, Menu, ShoppingCart, X } from "lucide-react";
+import { useCart } from "@/components/cart/cart-provider";
+import { usernameFromUser, type StoredAuthUser } from "@/lib/auth-user";
 
 const menuItems = [
   { name: "Catalogue", href: "/marketplace" },
   { name: "Viandes", href: "/marketplace?category=viande" },
   { name: "Légumes", href: "/marketplace?category=legume" },
-  { name: "Fournisseurs", href: "/marketplace?category=fournisseur" },
+  { name: "Fournisseurs", href: "/fournisseurs" },
   { name: "À propos", href: "/a-propos" },
 ];
 
 const Navbar = () => {
   const [menuState, setMenuState] = React.useState(false);
+  const { totalItems } = useCart();
+  const [authUser, setAuthUser] = React.useState<StoredAuthUser | null>(null);
+
+  React.useEffect(() => {
+    const loadUser = () => {
+      try {
+        const raw = window.localStorage.getItem("auth_user");
+        if (!raw) {
+          setAuthUser(null);
+          return;
+        }
+        setAuthUser(JSON.parse(raw) as StoredAuthUser);
+      } catch {
+        setAuthUser(null);
+      }
+    };
+
+    loadUser();
+    window.addEventListener("storage", loadUser);
+    return () => window.removeEventListener("storage", loadUser);
+  }, []);
+
+  const username = usernameFromUser(authUser);
+  const profileHref = `/${username}/profil`;
+
+  const profileLabel =
+    authUser?.firstName?.trim() ||
+    authUser?.lastName?.trim() ||
+    authUser?.email?.split("@")[0] ||
+    "Profil";
+  const profileAvatarSrc = authUser?.avatarUrl?.trim() || "/profil.png";
+
   return (
     <header>
       <nav
@@ -66,15 +101,34 @@ const Navbar = () => {
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="sm">
-                  <Link href="#">
+                  <Link href="/panier" className="relative">
                     <ShoppingCart />
+                    {totalItems > 0 ? (
+                      <span className="absolute -right-2 -top-2 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                        {totalItems}
+                      </span>
+                    ) : null}
                   </Link>
                 </Button>
-                <Button asChild size="sm">
-                  <Link href="/login">
-                    <span>Se connecter</span>
-                  </Link>
-                </Button>
+                {authUser ? (
+                  <Button asChild variant="ghost" size="icon-sm" className="rounded-full">
+                    <Link href={profileHref}>
+                      <Image
+                        src={profileAvatarSrc}
+                        alt={`Profil de ${profileLabel}`}
+                        width={60}
+                        height={60}
+                        className="rounded-full border object-cover"
+                      />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button asChild size="sm">
+                    <Link href="/login">
+                      <span>Se connecter</span>
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -85,3 +139,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

@@ -9,7 +9,7 @@ export function getAdmin(_req: Request, res: Response) {
 }
 
 export function getSeller(_req: Request, res: Response) {
-  return res.json({ ok: true, role: "vendeur" });
+  return res.json({ ok: true, role: "fournisseur" });
 }
 
 export function getClient(_req: Request, res: Response) {
