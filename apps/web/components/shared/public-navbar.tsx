@@ -1,45 +1,25 @@
-import { MdOutlineLocalGroceryStore } from "react-icons/md";
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Search, ShoppingBag } from "lucide-react";
 import { Button } from "../ui/button";
-import { IoSearch } from "react-icons/io5";
-import { Heart } from "lucide-react";
+
+const navItems = [
+  { label: "Notre Boutique", href: "/marketplace" },
+  { label: "Légumes", href: "/marketplace?category=legume" },
+  { label: "Viandes", href: "/marketplace?category=viande" },
+  { label: "Fournisseurs", href: "/fournisseurs" },
+];
 
 const PublicNavbar = () => {
+  const router = useRouter();
+
   return (
-    <header>
-      <nav className="flex items-center justify-between px-4 py-2">
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-bold">Grocery Store</span>
-        </div>
-
-        {/* <div className="">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full rounded-full border border-zinc-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-          </div>
-        </div> */}
-
-        <div className="">
-          
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="">
-            <Button variant={"link"} size="sm" className="text-black">
-              <Heart className="size-6" />
-            </Button>
-            <Button variant={"link"} size="sm" className="text-black">
-              <MdOutlineLocalGroceryStore className="size-6" />
-            </Button>
-          </div>
-          <Button variant={"default"} size="sm">
-            Sign In
-          </Button>
-        </div>
-      </nav>
+    <header className="border-b border-neutral-200 bg-white">
+      <div className="bg-primary px-4 py-1 text-center text-xs font-semibold uppercase tracking-[0.1rem] text-white">
+        Livraison offerte à partir de 5usd 🚚
+      </div>
     </header>
   );
 };

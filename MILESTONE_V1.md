@@ -304,3 +304,69 @@ Cette version apporte les premières fonctionnalités métier. Les issues sont v
 **Critères d’acceptation :**
 - `GET /health` retourne `{ ok: true }`.
 - `GET /recommendations` retourne une liste mock cohérente.
+
+---
+
+## Issue 10 — Profil Fournisseur (Basique)
+**Objectif :** Exposer un profil public fournisseur lié aux produits.
+
+**Étapes :**
+1. Ajouter les champs fournisseur côté `User` (ex: `displayName`, `description`, `location`).
+2. `GET /suppliers` (liste paginée).
+3. `GET /suppliers/:id` (détail + produits actifs).
+
+**Livrables :**
+- `apps/api/prisma/schema.prisma`
+- Routes fournisseurs
+
+**Critères d’acceptation :**
+- Un fournisseur peut être listé avec ses produits.
+- Pagination fonctionnelle.
+
+---
+
+## Issue 11 — Panier : Mise à jour de quantités
+**Objectif :** Modifier la quantité d’un item existant.
+
+**Étapes :**
+1. `PATCH /cart/items/:id` (quantity).
+2. Valider quantité >= 1.
+
+**Livrables :**
+- Routes panier mises à jour
+
+**Critères d’acceptation :**
+- La quantité est mise à jour correctement.
+- Erreur 400 si quantité invalide.
+
+---
+
+## Issue 12 — Commandes : Détail + Statuts simples
+**Objectif :** Consulter le détail d’une commande et gérer un statut minimal.
+
+**Étapes :**
+1. `GET /orders/:id` (items + total + status).
+2. `PATCH /orders/:id/status` (CONFIRMED | CANCELLED).
+
+**Livrables :**
+- Routes commandes mises à jour
+
+**Critères d’acceptation :**
+- Un user ne voit que ses commandes.
+- Le statut change correctement.
+
+---
+
+## Issue 13 — Reviews Produits (Basique)
+**Objectif :** Permettre aux clients de laisser un avis sur un produit.
+
+**Étapes :**
+1. `POST /products/:id/reviews` (rating, comment).
+2. `GET /products/:id/reviews`.
+
+**Livrables :**
+- Routes reviews
+
+**Critères d’acceptation :**
+- Un user peut laisser un avis.
+- La liste des avis est consultable.
