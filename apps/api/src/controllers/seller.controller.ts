@@ -66,12 +66,27 @@ export async function createSellerProduct(req: Request, res: Response) {
     return res.status(401).json({ error: "unauthorized" });
   }
 
-  const { name, description, price, category, unit, stock, imageUrl } = req.body || {};
+  const { name, description, price, category, unit, stock, imageUrl, mainImageUrl, detailImageUrls } = req.body || {};
   const normalizedName = String(name || "").trim();
   const priceNumber = Number(price);
   const stockNumber = Number(stock);
   const normalizedCategory = parseCategory(category);
   const normalizedUnit = parseUnit(unit);
+  const normalizedMainImage =
+    typeof mainImageUrl === "string" && mainImageUrl.trim()
+      ? mainImageUrl.trim()
+      : typeof imageUrl === "string" && imageUrl.trim()
+        ? imageUrl.trim()
+        : "";
+  const normalizedDetailImages = Array.isArray(detailImageUrls)
+    ? detailImageUrls
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .slice(0, 3)
+    : [];
+  const imageCandidates = [normalizedMainImage, ...normalizedDetailImages];
+  const uniqueImages = Array.from(new Set(imageCandidates.filter(Boolean)));
 
   if (!normalizedName) {
     return res.status(400).json({ error: "name required" });
@@ -88,7 +103,15 @@ export async function createSellerProduct(req: Request, res: Response) {
   if (!Number.isInteger(stockNumber) || stockNumber < 0) {
     return res.status(400).json({ error: "stock must be an integer >= 0" });
   }
-
+  if (!normalizedMainImage) {
+    return res.status(400).json({ error: "main image required" });
+  }
+  if (normalizedDetailImages.length !== 3) {
+    return res.status(400).json({ error: "three detail images required" });
+  }
+  if (uniqueImages.length !== 4) {
+    return res.status(400).json({ error: "main and detail images must be distinct" });
+  }
   const created = await prisma.product.create({
     data: {
       name: normalizedName,
@@ -99,16 +122,13 @@ export async function createSellerProduct(req: Request, res: Response) {
       stock: stockNumber,
       isActive: true,
       sellerId,
-      images:
-        typeof imageUrl === "string" && imageUrl.trim()
-          ? {
-              create: {
-                url: imageUrl.trim(),
-                alt: normalizedName,
-                position: 0,
-              },
-            }
-          : undefined,
+      images: {
+        create: uniqueImages.map((url, index) => ({
+          url,
+          alt: normalizedName,
+          position: index,
+        })),
+      },
     },
     include: {
       images: {

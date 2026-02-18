@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ type SellerProductResponse = {
 };
 
 export function SellerProductManager() {
+  const router = useRouter();
   const [products, setProducts] = useState<SellerProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,7 +38,17 @@ export function SellerProductManager() {
   const [category, setCategory] = useState<"legume" | "viande">("legume");
   const [unit, setUnit] = useState<"kg" | "piece" | "botte">("kg");
   const [stock, setStock] = useState("0");
-  const [imageUrl, setImageUrl] = useState("");
+  const [mainImageUrl, setMainImageUrl] = useState("");
+  const [detailImageUrl1, setDetailImageUrl1] = useState("");
+  const [detailImageUrl2, setDetailImageUrl2] = useState("");
+  const [detailImageUrl3, setDetailImageUrl3] = useState("");
+
+  const clearSessionAndRedirectToLogin = () => {
+    window.localStorage.removeItem("auth_token");
+    window.localStorage.removeItem("auth_user");
+    window.localStorage.removeItem("auth_username");
+    router.push("/login");
+  };
 
   const loadProducts = async () => {
     try {
@@ -51,6 +63,14 @@ export function SellerProductManager() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = (await response.json()) as SellerProductResponse | { error?: string };
+      if (
+        response.status === 401 &&
+        "error" in data &&
+        (data.error === "invalid token" || data.error === "missing or invalid token")
+      ) {
+        clearSessionAndRedirectToLogin();
+        return;
+      }
       if (!response.ok || !("items" in data)) {
         throw new Error(("error" in data && data.error) || "Impossible de charger vos produits.");
       }
@@ -91,11 +111,18 @@ export function SellerProductManager() {
           category,
           unit,
           stock: Number(stock),
-          imageUrl: imageUrl.trim() || undefined,
+          mainImageUrl: mainImageUrl.trim(),
+          detailImageUrls: [detailImageUrl1, detailImageUrl2, detailImageUrl3]
+            .map((item) => item.trim())
+            .filter(Boolean),
         }),
       });
 
       const data = (await response.json()) as { item?: SellerProduct; error?: string };
+      if (response.status === 401 && (data.error === "invalid token" || data.error === "missing or invalid token")) {
+        clearSessionAndRedirectToLogin();
+        return;
+      }
       if (!response.ok || !data.item) {
         throw new Error(data.error || "Creation du produit impossible.");
       }
@@ -107,7 +134,10 @@ export function SellerProductManager() {
       setCategory("legume");
       setUnit("kg");
       setStock("0");
-      setImageUrl("");
+      setMainImageUrl("");
+      setDetailImageUrl1("");
+      setDetailImageUrl2("");
+      setDetailImageUrl3("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de la creation.");
     } finally {
@@ -165,9 +195,28 @@ export function SellerProductManager() {
               required
             />
             <Input
-              value={imageUrl}
-              onChange={(event) => setImageUrl(event.target.value)}
-              placeholder="URL image (optionnel)"
+              value={mainImageUrl}
+              onChange={(event) => setMainImageUrl(event.target.value)}
+              placeholder="URL image principale (obligatoire)"
+              required
+            />
+            <Input
+              value={detailImageUrl1}
+              onChange={(event) => setDetailImageUrl1(event.target.value)}
+              placeholder="URL image detail 1"
+              required
+            />
+            <Input
+              value={detailImageUrl2}
+              onChange={(event) => setDetailImageUrl2(event.target.value)}
+              placeholder="URL image detail 2"
+              required
+            />
+            <Input
+              value={detailImageUrl3}
+              onChange={(event) => setDetailImageUrl3(event.target.value)}
+              placeholder="URL image detail 3"
+              required
             />
             <textarea
               value={description}

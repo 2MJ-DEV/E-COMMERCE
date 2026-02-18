@@ -43,10 +43,18 @@ const PopProd = () => {
 
         const data = (await response.json()) as { items?: Product[] };
         setProducts(Array.isArray(data.items) ? data.items : []);
-      } catch {
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
         setError("Impossible de charger les produits pour le moment.");
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     }
 

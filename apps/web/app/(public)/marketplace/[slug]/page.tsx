@@ -62,10 +62,18 @@ export default function MarketplaceItemPage() {
         const data = (await response.json()) as ProductDetails;
         setProduct(data);
         setSelectedImage(data.images?.[0] || data.image);
-      } catch {
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
         setError("Impossible de charger ce produit.");
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -75,7 +83,10 @@ export default function MarketplaceItemPage() {
 
   const gallery = useMemo(() => {
     if (!product) return [];
-    return product.images?.length ? product.images : [product.image];
+    if (Array.isArray(product.images) && product.images.length > 1) {
+      return product.images.slice(1, 4);
+    }
+    return [];
   }, [product]);
 
   const quantityOptions = useMemo(() => {
@@ -120,8 +131,8 @@ export default function MarketplaceItemPage() {
   }
 
   return (
-    <section className="mx-auto grid max-w-7xl gap-8 px-6 py-8 lg:grid-cols-[1.05fr_0.95fr]">
-      <div>
+    <section className="mx-auto grid max-w-7xl items-start gap-8 px-6 py-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:py-12">
+      <div className="min-w-0">
         <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-foreground">
             Accueil
@@ -132,33 +143,35 @@ export default function MarketplaceItemPage() {
           </Link>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border bg-neutral-100">
+        <div className="aspect-square overflow-hidden rounded-3xl border bg-neutral-100">
           <Image
             src={selectedImage || product.image}
             alt={product.name}
             width={1200}
             height={1200}
-            className="h-[530px] w-full object-cover"
+            className="h-full w-full object-cover"
           />
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-3">
-          {gallery.map((img, index) => (
-            <button
-              key={`${img}-${index}`}
-              type="button"
-              onClick={() => setSelectedImage(img)}
-              className={`overflow-hidden rounded-2xl border ${
-                selectedImage === img ? "border-black" : "border-neutral-300"
-              }`}
-            >
-              <Image src={img} alt={`${product.name} ${index + 1}`} width={300} height={180} className="h-28 w-full object-cover" />
-            </button>
-          ))}
-        </div>
+        {gallery.length > 0 ? (
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            {gallery.map((img, index) => (
+              <button
+                key={`${img}-${index}`}
+                type="button"
+                onClick={() => setSelectedImage(img)}
+                className={`overflow-hidden rounded-2xl border ${
+                  selectedImage === img ? "border-black" : "border-neutral-300"
+                }`}
+              >
+                <Image src={img} alt={`${product.name} detail ${index + 1}`} width={300} height={180} className="h-28 w-full object-cover" />
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
-      <aside>
+      <aside className="min-w-0">
         <div className="mb-2 inline-flex rounded-full border px-3 py-1 text-xs font-medium capitalize text-muted-foreground">
           {product.category}
         </div>
@@ -174,13 +187,13 @@ export default function MarketplaceItemPage() {
 
         <div className="mt-6">
           <p className="mb-3 text-sm font-medium">Choisir la quantite</p>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="flex flex-wrap gap-2">
             {quantityOptions.map((qty) => (
               <button
                 key={qty}
                 type="button"
                 onClick={() => setSelectedQuantity(qty)}
-                className={`rounded-full border px-4 py-3 text-sm ${
+                className={`min-w-[96px] rounded-full border px-6 py-3 text-sm ${
                   selectedQuantity === qty ? "bg-black text-white" : "bg-white"
                 }`}
               >
@@ -197,14 +210,14 @@ export default function MarketplaceItemPage() {
           <Button className="h-12 flex-1 rounded-full" onClick={handleAddToCart}>
             {justAdded ? "Ajoute au panier" : "Ajouter au panier"}
           </Button>
-          <Button variant="outline" size="icon-lg" className="rounded-full">
+          <Button variant="outline" size="icon-lg" className="rounded-full size-9" disabled>
             <Heart />
           </Button>
         </div>
 
         <div className="mt-6 rounded-2xl border p-5">
           <h2 className="mb-2 text-xl font-semibold">Description produit</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="break-words text-sm leading-relaxed text-muted-foreground">
             {product.description || "Aucune description fournie pour ce produit."}
           </p>
         </div>
